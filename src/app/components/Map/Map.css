@@ -1,0 +1,16 @@
+.my-popup {
+  border-radius: 4px;
+
+  font-size: 16px;
+  color: black;
+}
+
+.marker {
+  background-image: url("/public/Locationpin.png");
+  background-size: cover;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  background-color: black;
+}

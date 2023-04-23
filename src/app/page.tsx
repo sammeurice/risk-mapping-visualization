@@ -1,41 +1,43 @@
 "use client";
-import { Inter } from "next/font/google";
 import React from "react";
-import Map from "./components/Map";
-
-const inter = Inter({ subsets: ["latin"] });
-
-interface Asset {
-  "Asset Name": string;
-  "Business Category": string;
-  Lat: number;
-  Long: number;
-  "Risk Factors": string;
-  "Risk Rating": number;
-  Year: number;
-}
+import Map from "./components/Map/Map";
+import Table from "./components/Table/Table";
+import { Asset, ParsedAsset } from "./services/models";
 
 export default function Home() {
-  const [data, setData] = React.useState<Asset[]>([]);
+  const [data, setData] = React.useState<ParsedAsset[]>([]);
   const [selectedDecade, setSelectedDecade] = React.useState("");
+  const [selectedDecadeData, setSelectedDecadeData] = React.useState<
+    ParsedAsset[]
+  >([]);
 
   React.useEffect(() => {
     fetch("/data.json")
       .then((response) => response.json())
-      .then((jsonData) => setData(jsonData));
+      .then((data) => {
+        const parsedData = data.map((item: Asset) => {
+          const parsedRiskFactors = JSON.parse(item["Risk Factors"]);
+          return { ...item, "Risk Factors": parsedRiskFactors };
+        });
+        setData(parsedData);
+      });
   }, []);
 
-  function filterByDecade(assets: Asset[]) {
-    return assets.filter((asset) => asset.Year === parseInt(selectedDecade));
+  function filterByDecade(assets: ParsedAsset[], year: string) {
+    console.log(data);
+    setSelectedDecade(year);
+    return assets.filter((asset) => asset.Year === parseInt(year));
   }
 
   return (
     <div className="flex flex-col items-center gap-4">
       <p>Hello</p>
       <select
-        id="decade-select"
+        className="color-black"
         value={selectedDecade}
-        onChange={(event) => setSelectedDecade(event.target.value)}
+        onChange={(event) => {
+          setSelectedDecadeData(filterByDecade(data, event.target.value));
+        }}
       >
         <option value="2030">2030s</option>
         <option value="2040">2040s</option>
@@ -43,10 +45,7 @@ export default function Home() {
         <option value="2060">2060s</option>
         <option value="2070">2070s</option>
       </select>
-      <button onClick={() => console.log(filterByDecade(data))}>
-        Press Me
-      </button>
-      <Map />
+      <Table assets={selectedDecadeData} />
     </div>
   );
 }
